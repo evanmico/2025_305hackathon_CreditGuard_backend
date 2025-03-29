@@ -19,6 +19,15 @@ const __dirname = dirname(__filename);
 // defines PORT variable with the port to listen on
 const PORT = process.env.PORT || 8805;
 
+// custom middleware imports
+import { logger } from "./middleware/logEvents.js";
+import errorHandler from "./middleware/errorHandler.js"; // Custom error handler import
+import cookieParser from "cookie-parser"; // import of cookie-parser package to parse cookies
+// controller imports
+import { catchAll } from "./controllers/appController.js"; // catchAll controller to correctly serve a 404 if invalid api route is accessed
+// route imports
+import { rootRouter } from "./routes/root.js";
+
 // custom middleware logger 
 app.use(logger);
 

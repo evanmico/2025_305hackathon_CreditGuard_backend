@@ -1,0 +1,37 @@
+{
+  "name": "creditguard_backend",
+  "version": "1.0.0",
+  "description": "backend for 2025 305 hackathon at FIU",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.0",
+    "sql-template-strings": "^2.2.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.23.0",
+    "eslint-plugin-sql": "^3.2.1",
+    "nodemon": "^3.1.9"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "*.*",
+      "**/**"
+    ],
+    "ext": "js,mjs,cjs,json,css,html"
+  }
+}

@@ -19,6 +19,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.0",
+    "openai": "^4.90.0",
     "sql-template-strings": "^2.2.2",
     "uuid": "^11.1.0"
   },

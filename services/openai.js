@@ -29,11 +29,26 @@ export async function readBenefitsFromLink(link) {
                     An example of a URL you can crawl is "https://www.wellsfargo.com/credit-cards/autograph-visa/guide-to-benefits/#BTT" because this URL has the parameters "guide-to-benefits"
                     An example of a benefit you may find is "payment for standard towing up to 5 miles" or "We pay for your cellphone replacement incase you lose your cellphone".
                     Not all credit cards will offer the same benefits, so go throughly through each section to each benefit.
-                    Return this information as an array of JSON objects, each formatted that follows this example:
+                    Return this information as an array of JSON objects, each JSON Object is formatted in this template:
+                     [
+                        {
+                        benefitName: small str value,
+                        benefitDescription: long text of full benefit detail
+                        },
+                        {
+                        benefitName: small str value,
+                        benefitDescription: long text of full benefit detail
+                        },
+                        {
+                        benefitName: small str value,
+                        benefitDescription: long text of full benefit detail
+                        }
+                    ],
+                    Her is an example of a JSON object:
                     benefits:[
                         {
                             "Benefit Name": "Free Towing",
-                            "description": "Free towing up to 5 miles."
+                            "description": "Free towing up to 5 miles. Your car must be fully unoperational and you must be within 5 miles of a towing service."
                         },
                         {
                             "benefit": "Cellphone protection",

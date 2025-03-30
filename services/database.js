@@ -161,3 +161,7 @@ export async function returnCompetitorCardBenefits(cardName){
         throw error;
     }
 }
+
+async function insertBank(bankName){
+    
+}

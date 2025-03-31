@@ -19,7 +19,7 @@ export async function readBenefitsFromLink(link) {
         }
 
         const response = await openaiClient.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4o-mini',
             messages: [
                 {
                     role: 'system',
@@ -44,7 +44,7 @@ export async function readBenefitsFromLink(link) {
                         benefitDescription: long text of full benefit detail
                         }
                     ],
-                    Her is an example of a JSON object:
+                    Here is an example of a JSON object:
                     benefits:[
                         {
                             "Benefit Name": "Free Towing",
@@ -61,18 +61,20 @@ export async function readBenefitsFromLink(link) {
                     content: `${benefitsURL} \nThis link has information regarding the benefits of a credit card. Read it, and summarize the benefits of the product in it.`,
 
                     role: 'assistant',
-                    content: 'Return an array of benefits in a json structure: Benefits[{Benefit name: description}]. If there is no benefits, return an empty array.'
+                    content: `Return only an array of benefits in a json structure: Benefits[{Benefit name: description}]. 
+                    Do not include any other text like an explanation or a presentation speech
+                    If there is no benefits, return an empty array.`
 
                 }
             ],
         })
 
-    if(!response.choices || response.choices.length === 0){
-        throw new Error('No choices found in the response')
-    }
+        if(!response.choices || response.choices.length === 0){
+            throw new Error('No choices found in the response')
+        }
 
-    const message = response.choices[0].message.content
-    return message
+        const message = response.choices[0].message.content
+        return message
     }catch(err){
         console.error('Error reading benefits:', err)
         throw err

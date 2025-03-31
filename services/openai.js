@@ -1,6 +1,6 @@
 import openai from 'openai';
 //import URL from 'url';
-import FirecrawlApp from 'mendable/firecrawl';
+import FirecrawlApp from 'firecrawl';
 import {z} from 'zod';
 import url from 'node:url';
 
@@ -121,8 +121,9 @@ export async function readBenefitsFromLinkFirecrawl(link){
         if(!response || response.length === 0){
             throw new Error('No choices found in the response')
         }
-        
-        return response
+        console.log(response)
+        console.log(response.data.cardBenefits)
+        return response.data.cardBenefits;
     }catch(err){
         console.error('Error reading benefits:', err)
         throw err

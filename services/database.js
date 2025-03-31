@@ -84,7 +84,7 @@ export const storeBenefits = async (cardID,benefits) => {
         const selectLastSQLobj = SQL`SELECT LAST_INSERT_ID() AS ID`;
         // creates a version of original benefits array with an ID for each one pulled from the db (or gotten upon insert)
         console.log(benefits);
-        const benefitsWithIDs = Array(...benefits).map(async (benefit) => {
+        const benefitsWithIDs = await Promise.all(Array(...benefits).map(async (benefit) => {
             let checkBenefitIDSQLobj = SQL`SELECT ID from benefit WHERE name = `;
             let [rows,] = await connection.query(checkBenefitIDSQLobj.append(SQL`${benefit.benefitName}`));
             let benefitID;
@@ -96,17 +96,22 @@ export const storeBenefits = async (cardID,benefits) => {
             } else {
                 benefitID = rows[0].ID;
             }
+            console.log(benefitID);
+            console.log({...benefit,"benefitID":benefitID})
             return {
                 ...benefit,
                 "benefitID" : benefitID
             }
-        });
+        }));
+        console.log(benefitsWithIDs[0]);
         connection.release();
+        console.log(benefitsWithIDs[0]);
         // declare start of sql query objects to be built and run on db to add benefits
-        const card_benefitInsertSQLobj = SQL`INSERT INTO card_benefit (cardID, benefitID) VALUES`;
-        const full$benefitInsertSQLobj = SQL`INSERT INTO full$benefit (cardID, benefitID, text) VALUES`;
+        const card_benefitInsertSQLobj = SQL`INSERT IGNORE INTO card_benefit (cardID, benefitID) VALUES`;
+        const full$benefitInsertSQLobj = SQL`INSERT IGNORE INTO full$benefit (cardID, benefitID, text) VALUES`;
         // append each benefit value to the sql query object that should be added
         benefitsWithIDs.forEach( (benefit, index) => {
+            console.log(benefit.benefitID);
             if(index+1 == benefitsWithIDs.length){
                 card_benefitInsertSQLobj.append(SQL`(${cardID}, ${benefit.benefitID})`);
                 full$benefitInsertSQLobj.append(SQL`(${cardID}, ${benefit.benefitID}, ${benefit.benefitDescription})`);
@@ -129,14 +134,14 @@ export const storeBenefits = async (cardID,benefits) => {
 export async function competitorCardBenefits(cardID){
     try {
         
-        const competitorCardsSQLobj = SQL`SELECT pCard.ID, pCard.name, sum(b.ID) as sum
-                                            FROM
-                                                (SELECT ID FROM card WHERE ID <> ${cardID}) AS pCard
-                                                    (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
-                                                        INNER JOIN benefit b ON cLink.benefitID=b.ID
-                                        GROUP BY pCard.ID
-                                        DESC
-                                        LIMIT 3`;
+        const competitorCardsSQLobj = SQL`SELECT pCard.ID, pCard.name, sum(pCard.ID) AS sum
+    FROM
+        (SELECT c.ID, c.name FROM card c WHERE ID <> 5) AS pCard
+            INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID
+                INNER JOIN benefit b ON cLink.benefitID=b.ID
+    GROUP BY pCard.ID
+    ORDER BY pCard.id DESC
+    LIMIT 3`;
         
         const [competitorCards,] = await connectDB.query(competitorCardsSQLobj);
 
@@ -147,9 +152,9 @@ export async function competitorCardBenefits(cardID){
         const compCardsAndBenefits = competitorCards.map(async (card) => {
             let competitorCardBenefitsSQLobj = SQL`
                                                 SELECT b.ID AS benefitID, b.name AS benefitName
-                                                FROM(SELECT ID FROM card WHERE ID = ${card.ID}) AS pCard
-                                                    (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID)
-                                                        INNER JOIN benefit b ON cLink.benefitID=b.ID
+                                                FROM(SELECT ID FROM card WHERE ID = 1) AS pCard
+                                                INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID
+                                                INNER JOIN benefit b ON cLink.benefitID=b.ID
                                                 `;
             let [benefits,]  = await connectDB.query(competitorCardBenefitsSQLobj);
             return {

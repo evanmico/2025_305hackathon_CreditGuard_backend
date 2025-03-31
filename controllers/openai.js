@@ -52,7 +52,7 @@ export async function getBenefits(req, res) {
             return res.status(404).json({ error: 'No competitor benefits found' })
         }
 
-        return res.status(200).json({ benefits, competitorCards: competitorBenefits})
+        return res.status(200).json({ benefits: benefits , competitorCards: competitorBenefits})
     } catch (error) {
         console.error('Error in getBenefits:', error)
         return res.status(500).json({ error: 'Internal Server Error' })

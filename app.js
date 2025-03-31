@@ -47,12 +47,7 @@ app.use("/", express.static(path.join(__dirname, "/public"))); // each file or f
 // routes themselves
 // routes with no JWT verification required
 app.use('^/$|/index(.html)?', rootRouter); // index or just '/' route
-<<<<<<< HEAD
-app
-
-=======
 app.use('/test',benefitsRouter)
->>>>>>> 11bc88a (fixed azure mysql2 connection and various lots of database.js)
 // routes that require JWT verification
 
 

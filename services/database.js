@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import connectDB from "../config/azure";
+import connectDB from "../config/azure.js";
 import SQL from 'sql-template-strings';
 
 //dotenv.config();

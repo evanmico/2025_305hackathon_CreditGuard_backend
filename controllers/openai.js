@@ -1,5 +1,5 @@
 import {
-    readBenefits
+    readBenefitsFromLink
 } from '../services/openai.js'
 import {
     storeCard,
@@ -22,7 +22,7 @@ export async function getBenefits(req, res) {
         }
 
 
-        const benefits = await readBenefits(link)
+        const benefits = await readBenefitsFromLink(link)
 
         if(!benefits || benefits.length === 0){
             return res.status(404).json({ error: 'No benefits found' })
@@ -47,7 +47,7 @@ export async function getBenefits(req, res) {
         }
 
         const competitorBenefits = await competitorCardBenefits(storeCardResponse.cardInfo.ID)
-        
+
         if(!competitorBenefits || competitorBenefits.length === 0){
             return res.status(404).json({ error: 'No competitor benefits found' })
         }

@@ -86,6 +86,7 @@ export const storeBenefits = async (cardID,benefits) => {
         const connection = await connectDB.getConnection();
         
         // creates a version of original benefits array with an ID for each one pulled from the db (or gotten upon insert)
+
         const benefitsWithIDs = benefits.map(async (benefit) => {
             [rows,] = await connection.query({...checkBenefitIDSQLobj}.append(SQL`${benefit.benefitName}`));
             let benefitID;
@@ -117,6 +118,8 @@ export const storeBenefits = async (cardID,benefits) => {
         // add all benefits to db with 2 queries
         await connectDB.query(card_benefitInsertSQLobj);
         await connectDB.query(full$benefitInsertSQLobj);
+
+     
     } catch (error) {
         console.error("Error storing benefits:", error);
         throw error;

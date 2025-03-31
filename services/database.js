@@ -129,59 +129,44 @@ export const storeBenefits = async (cardID,benefits) => {
 export async function competitorCardBenefits(cardID){
     try {
         
-        const competitorCardIdsQuery = SQL`SELECT pCard.ID, pCard.name, sum(b.ID) as sum
+        const competitorCardsSQLobj = SQL`SELECT pCard.ID, pCard.name, sum(b.ID) as sum
                                             FROM
-                                                (SELECT ID FROM card WHERE ID <> "givenID") AS pCard
+                                                (SELECT ID FROM card WHERE ID <> ${cardID}) AS pCard
                                                     (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
                                                         INNER JOIN benefit b ON cLink.benefitID=b.ID
                                         GROUP BY pCard.ID
                                         DESC
-                                        LIMIT 3;`;
+                                        LIMIT 3`;
         
-        const [competitorCardIds] = await connectDB.query(competitorCardIdsQuery);
+        const [competitorCards,] = await connectDB.query(competitorCardsSQLobj);
 
-        if(!competitorCardIds || competitorCardIds.length === 0){
-            throw new Error('Cannot retrieve competitors card Ids', competitorCardIds.error.message)
-        }
-
-        const test = SQL`SELECT pCard.ID, pCard.name, sum(b.ID) as sum
-                                            FROM
-                                                (SELECT ID FROM card WHERE ID <> "givenID") AS pCard
-                                                    (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
-                                                        INNER JOIN benefit b ON cLink.benefitID=b.ID`
+        if(!competitorCards || competitorCards.length === 0){
+            throw new Error('Cannot retrieve competitors card Ids', competitorCards.error.message)
+        };
         
-        const benefitsFromCompetitorCardIdQuery = SQL`SELECT b.ID, b.name
-                                                        FROM
-                                                            (SELECT ID FROM card WHERE ID = "competitorCardId") AS pCard
-                                                                (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
-                                                                    INNER JOIN benefit b ON cLink.benefitID=b.ID;`;
-        //return back names and benefits
-        for(competitorCardId of competitorCardIds){
-            const [benefitIds] = await connection.query(benefitsIdQuery, [competitorCardId]);
-            if(!benefitIds || benefitIds.length === 0){
-                throw new Error(`Cannot retrieve benefits for ${competitorCardId}`)
-            }
+        const compCardsAndBenefits = competitorCards.map(async (card) => {
+            let competitorCardBenefitsSQLobj = SQL`
+                                                SELECT b.ID AS benefitID, b.name AS benefitName
+                                                FROM(SELECT ID FROM card WHERE ID = ${card.ID}) AS pCard
+                                                    (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID)
+                                                        INNER JOIN benefit b ON cLink.benefitID=b.ID
+                                                `;
+            let [benefits,]  = await connectDB.query(competitorCardBenefitsSQLobj);
+            return {
+                ...card,
+                benefits: benefits
+            };
+        });
+        return compCardsAndBenefits;
 
-            //ughhhhh this is so ugly and stupid and uhhhghghghghghghghhggh
-
-            for(benefitId of benefitIds){
-                const [benefits] = await connection.query(benefitsIdQuery, [benefitId]);
-                if(!benefits || benefits.length === 0){
-                    throw new Error(`Cannot retrieve benefits for ${benefitId} in card ${competitorCardId}`)
-                }
-                competitorCardId.benefit = benefits
-            }
-        }
-
-        
-        connection.release();
-        return rows;
     } catch (error) {
         console.error("Error retrieving competitor cards:", error);
         throw error;
     }
 }
-
+// not needed cause storeCard does this automatically
+/*
 async function insertBank(bankName){
 
 }
+*/

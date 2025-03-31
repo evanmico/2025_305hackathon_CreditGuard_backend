@@ -1,6 +1,6 @@
 import openai from 'openai';
-import URL from 'url';
-
+//import URL from 'url';
+import url from 'node:url';
 
 const openaiClient = new openai.OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -12,7 +12,8 @@ const benefits = []
 export async function readBenefitsFromLink(link) {
     try{
 
-        const benefitsURL = new URL(link)
+        //const benefitsURL = new URL(link)
+        const benefitsURL = url.parse(link);
 
         if(!benefitsURL.protocol || !benefitsURL.host){
             throw new Error('Invalid URL')
@@ -69,11 +70,15 @@ export async function readBenefitsFromLink(link) {
             ],
         })
 
+        console.log(response.choices[0].message);
+
+
         if(!response.choices || response.choices.length === 0){
             throw new Error('No choices found in the response')
         }
 
         const message = response.choices[0].message.content
+        console.log(message);
         return message
     }catch(err){
         console.error('Error reading benefits:', err)

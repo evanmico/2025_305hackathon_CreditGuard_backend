@@ -27,6 +27,7 @@ import cookieParser from "cookie-parser"; // import of cookie-parser package to 
 import { catchAll } from "./controllers/appController.js"; // catchAll controller to correctly serve a 404 if invalid api route is accessed
 // route imports
 import { rootRouter } from "./routes/root.js";
+import { benefitsRouter } from "./routes/api/benefits.js";
 
 // custom middleware logger 
 app.use(logger);
@@ -46,8 +47,12 @@ app.use("/", express.static(path.join(__dirname, "/public"))); // each file or f
 // routes themselves
 // routes with no JWT verification required
 app.use('^/$|/index(.html)?', rootRouter); // index or just '/' route
+<<<<<<< HEAD
 app
 
+=======
+app.use('/test',benefitsRouter)
+>>>>>>> 11bc88a (fixed azure mysql2 connection and various lots of database.js)
 // routes that require JWT verification
 
 

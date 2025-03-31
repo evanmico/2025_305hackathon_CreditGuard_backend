@@ -1,9 +1,16 @@
 import openai from 'openai';
 //import URL from 'url';
+import FirecrawlApp from 'mendable/firecrawl';
+import {z} from 'zod';
 import url from 'node:url';
 
 const openaiClient = new openai.OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+})
+
+const firecrawl = new FirecrawlApp({
+    apiKey: process.env.FIRECRAWL_API_KEY,
+    appId: process.env.FIRECRAWL_APP_ID
 })
 
 const benefits = []
@@ -86,6 +93,41 @@ export async function readBenefitsFromLink(link) {
     }
 }
 
+const schema = z.object({
+    cardBenefits: z.array(z.object({
+        benefitName: z.string(),
+        benefitDescription: z.string()
+    }))
+})
+
+export async function readBenefitsFromLinkFirecrawl(link){
+    try{
+        const benefitsURL = url.parse(link);
+        console.log(benefitsURL);
+
+        if(!benefitsURL.protocol || !benefitsURL.host){
+            throw new Error('Invalid URL')
+        }
+
+       
+
+        const response = await firecrawl.extract([
+            benefitsURL.href,
+        ],{
+            prompt: "Extract each benefit from the link above.",
+            schema: schema
+        })
+
+        if(!response || response.length === 0){
+            throw new Error('No choices found in the response')
+        }
+        
+        return response
+    }catch(err){
+        console.error('Error reading benefits:', err)
+        throw err
+    }
+}
 /*
 
 FOR LATER DEVELOPMENT IF WE HAVE TIME

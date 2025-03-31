@@ -1,5 +1,6 @@
 import {
-    readBenefitsFromLink
+    readBenefitsFromLink,
+    readBenefitsFromLinkFirecrawl
 } from '../services/openai.js'
 import {
     storeCard,
@@ -22,7 +23,7 @@ export async function getBenefits(req, res) {
         }
 
 
-        const benefits = await readBenefitsFromLink(link)
+        const benefits = await readBenefitsFromLinkFirecrawl(link)
 
         if(!benefits || benefits.length === 0){
             return res.status(404).json({ error: 'No benefits found' })

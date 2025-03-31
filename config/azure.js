@@ -1,4 +1,5 @@
 import mysql2 from "mysql2/promise";
+import fs from 'node:fs';
 
 const connectDB = mysql2.createPool({
     host: process.env.DB_HOST,
@@ -6,6 +7,9 @@ const connectDB = mysql2.createPool({
     database: process.env.DB_DATABASE,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
+    ssl: {
+        ca: fs.readFileSync(process.env.DB_SSL)
+    },
     waitForConnections: true,
     connectionLimit: 10,
     maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`

@@ -11,15 +11,14 @@ export const storeCard = async (bankName, cardName) => {
         let rows;
         [rows,] = await connectDB.query(checkBankSQLobj);
         // what I'd like to use, but it might not work as a SQL object
-        const bankInsertSQLobj = SQL`
-        START TRANSACTION;
-            INSERT INTO bank (name) VALUES (${bankName});
-            SELECT LAST_INSERT_ID();
-        COMMIT;
-        `;
+        const bankInsertSQLobj = SQL`INSERT INTO bank (name) VALUES (${bankName})`;
+        const selectLastSQLobj = SQL`SELECT LAST_INSERT_ID() AS ID`;
         let bankID;
+        const connection = await connectDB.getConnection();
         if((rows == undefined || rows.length === 0)) {
-            [[{ ID: bankID }],] = await connectDB.query(bankInsertSQLobj);
+            await connection.query(bankInsertSQLobj);
+            console.log(await connection.query(selectLastSQLobj));
+            [[{ ID: bankID }],] = await connection.query(selectLastSQLobj);
         } else {
             bankID = rows[0].ID;
         }
@@ -27,18 +26,16 @@ export const storeCard = async (bankName, cardName) => {
         // check if a card with the same name and same bank already exists in the db and insert if it doesn't exist, returning the new ID
         const checkCardSQLobj = SQL`SELECT ID FROM card WHERE name = ${cardName} AND bankID = ${bankID} LIMIT 1`;
         [rows,] = await connectDB.query(checkCardSQLobj);
-        const cardInsertSQLobj = SQL`
-        START TRANSACTION;
-            INSERT INTO card (name, bankID) VALUES (${cardName}, ${bankID});
-            SELECT LAST_INSERT_ID();
-        COMMIT;
-        `;
+        const cardInsertSQLobj = SQL`INSERT INTO card (name, bankID) VALUES (${cardName}, ${bankID})`;
+
         let cardID;
         if((rows == undefined || rows.length === 0)) {
-            [[{ ID: cardID }],] = await connectDB.query(cardInsertSQLobj);
+            await connection.query(cardInsertSQLobj);
+            [[{ ID: cardID }],] = await connection.query(selectLastSQLobj);
         } else {
             cardID = rows[0].ID;
         }
+        connection.release();
 /*
         const connection = await connectDB.getConnection();
         const insertQuery = `INSERT INTO benefits (benefit_name, description) VALUES (?, ?)`;
@@ -81,18 +78,21 @@ export const storeBenefits = async (cardID,benefits) => {
     try {
 
         // go through all benefit names in db and if they don't exist, insert them
-        const insertBenefitNameSQLobj = SQL`INSERT INTO benefit (name) VALUES`;
-        const checkBenefitIDSQLobj = SQL`SELECT ID from benefit WHERE name = `;
+        //const insertBenefitNameSQLobj = SQL`INSERT INTO benefit (name) VALUES`;
+        //const checkBenefitIDSQLobj = SQL`SELECT ID from benefit WHERE name = `;
         const connection = await connectDB.getConnection();
-        
+        const selectLastSQLobj = SQL`SELECT LAST_INSERT_ID() AS ID`;
         // creates a version of original benefits array with an ID for each one pulled from the db (or gotten upon insert)
-
-        const benefitsWithIDs = benefits.map(async (benefit) => {
-            [rows,] = await connection.query({...checkBenefitIDSQLobj}.append(SQL`${benefit.benefitName}`));
+        console.log(benefits);
+        const benefitsWithIDs = Array(...benefits).map(async (benefit) => {
+            let checkBenefitIDSQLobj = SQL`SELECT ID from benefit WHERE name = `;
+            let [rows,] = await connection.query(checkBenefitIDSQLobj.append(SQL`${benefit.benefitName}`));
             let benefitID;
             if((rows == undefined || rows.length === 0)) {
-                await connection.query({...insertBenefitNameSQLobj}.append(SQL`(${benefit.benefitName})`));
-                [[{ ID: benefitID }],] = await connection.query(SQL`SELECT LAST_INSERT_ID()`);
+                let insertBenefitNameSQLobj = SQL`INSERT INTO benefit (name) VALUES`;
+                console.log(benefit.benefitName);
+                await connection.query(insertBenefitNameSQLobj.append(SQL`(${benefit.benefitName})`));
+                [[{ ID: benefitID }],] = await connection.query(selectLastSQLobj);
             } else {
                 benefitID = rows[0].ID;
             }

@@ -79,10 +79,12 @@ export const storeBenefits = async (cardID,benefits) => {
     ]
     */
     try {
+
         // go through all benefit names in db and if they don't exist, insert them
         const insertBenefitNameSQLobj = SQL`INSERT INTO benefit (name) VALUES`;
         const checkBenefitIDSQLobj = SQL`SELECT ID from benefit WHERE name = `;
         const connection = await connectDB.getConnection();
+        
         // creates a version of original benefits array with an ID for each one pulled from the db (or gotten upon insert)
         const benefitsWithIDs = benefits.map(async (benefit) => {
             [rows,] = await connection.query({...checkBenefitIDSQLobj}.append(SQL`${benefit.benefitName}`));
@@ -121,21 +123,36 @@ export const storeBenefits = async (cardID,benefits) => {
     }
 }
 
-export async function returnCompetitorCardBenefits(cardName){
+export async function competitorCardBenefits(cardID){
     try {
-        const connection = await connectDB.getConnection();
-
-        const competitorsCardsQuery = `SELECT ID, name FROM card WHERE name IS NOT ${cardName}`;
-        const [competitorCardIds] = await connection.query(competitorsCardsQuery);
+        
+        const competitorCardIdsQuery = SQL`SELECT pCard.ID, pCard.name, sum(b.ID) as sum
+                                            FROM
+                                                (SELECT ID FROM card WHERE ID <> "givenID") AS pCard
+                                                    (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
+                                                        INNER JOIN benefit b ON cLink.benefitID=b.ID
+                                        GROUP BY pCard.ID
+                                        DESC
+                                        LIMIT 3;`;
+        
+        const [competitorCardIds] = await connectDB.query(competitorCardIdsQuery);
 
         if(!competitorCardIds || competitorCardIds.length === 0){
-            throw new Error('Cannot retrieve competitors cards')
+            throw new Error('Cannot retrieve competitors card Ids', competitorCardIds.error.message)
         }
 
-        const benefitsIdQuery = "SELECT benefitID FROM card_benefit WHERE card_id IS (?)";
-        const benefitNameQuery = "SELECT name FROM benefit WHERE ID IS (?)";
-        const benefitDescriptionQuery = "SELECT text FROM full$benefit WHERE cardID IS (?) AND";
-
+        const test = SQL`SELECT pCard.ID, pCard.name, sum(b.ID) as sum
+                                            FROM
+                                                (SELECT ID FROM card WHERE ID <> "givenID") AS pCard
+                                                    (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
+                                                        INNER JOIN benefit b ON cLink.benefitID=b.ID`
+        
+        const benefitsFromCompetitorCardIdQuery = SQL`SELECT b.ID, b.name
+                                                        FROM
+                                                            (SELECT ID FROM card WHERE ID = "competitorCardId") AS pCard
+                                                                (INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID) 
+                                                                    INNER JOIN benefit b ON cLink.benefitID=b.ID;`;
+        //return back names and benefits
         for(competitorCardId of competitorCardIds){
             const [benefitIds] = await connection.query(benefitsIdQuery, [competitorCardId]);
             if(!benefitIds || benefitIds.length === 0){
@@ -163,5 +180,5 @@ export async function returnCompetitorCardBenefits(cardName){
 }
 
 async function insertBank(bankName){
-    
+
 }

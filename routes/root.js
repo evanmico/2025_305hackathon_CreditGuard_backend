@@ -17,6 +17,6 @@ router.get('^/$|/index(.html)?', (req, res)=>{
 });
 
 router.post('/benefits', getBenefits);
-
+router.post('/test', getBenefits);
 
 export { router as rootRouter };

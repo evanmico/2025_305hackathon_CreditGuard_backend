@@ -3,7 +3,7 @@ import whiteList from "./corsWhiteListConn.js"; //localhost (127 and localhost) 
 const corsOptions = {
   origin: (origin, callback) => {
     // !origin is only DURING dev since otherwise we can't access our ownbackend
-    if (whiteList.indexOf(origin) !== -1 || !origin) {
+    if (whiteList.indexOf(origin) !== -1) {
       //if domain accessing api is inside whiteList show null for error and permit it through
       callback(null, true);
     } else {

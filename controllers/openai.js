@@ -38,9 +38,10 @@ export async function getBenefits(req, res) {
         try{
 
             storeBenefitsResponse = await storeBenefits(storeCardResponse.cardInfo.ID, benefits)
+            /*
             if(!storeBenefitsResponse || !storeBenefitsResponse.card_benefit || !storeBenefitsResponse.full$benefit){
                 throw error('WARNING: Error storing benefits:', storeBenefitsResponse)
-            }
+            }*/
 
         }catch(error){
             console.error('Error storing card or benefits:', error)

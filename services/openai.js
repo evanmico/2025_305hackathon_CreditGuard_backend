@@ -114,7 +114,7 @@ export async function readBenefitsFromLinkFirecrawl(link){
         const response = await firecrawl.extract([
             benefitsURL.href,
         ],{
-            prompt: "Extract each benefit from the link above.",
+            prompt: "Extract each benefit from the link above. Consider reward/feature/award/benefit as equivalents for the term 'benefit'.",
             schema: schema
         })
 

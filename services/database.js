@@ -134,7 +134,7 @@ export const storeBenefits = async (cardID,benefits) => {
 export async function competitorCardBenefits(cardID){
     try {
         
-        const competitorCardsSQLobj = SQL`SELECT pCard.ID, pCard.name, sum(pCard.ID) AS sum
+        const competitorCardsSQLobj = SQL`SELECT pCard.ID AS cardID, pCard.name AS cardName, count(pCard.ID) AS sum
     FROM
         (SELECT c.ID, c.name FROM card c WHERE ID <> 5) AS pCard
             INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID
@@ -146,22 +146,25 @@ export async function competitorCardBenefits(cardID){
         const [competitorCards,] = await connectDB.query(competitorCardsSQLobj);
 
         if(!competitorCards || competitorCards.length === 0){
-            throw new Error('Cannot retrieve competitors card Ids', competitorCards.error.message)
+            throw error('Cannot retrieve competitors card Ids', competitorCards.error.message)
         };
         
-        const compCardsAndBenefits = competitorCards.map(async (card) => {
+        const compCardsAndBenefits = await Promise.all(competitorCards.map(async (card) => {
+            console.log(card);
             let competitorCardBenefitsSQLobj = SQL`
                                                 SELECT b.ID AS benefitID, b.name AS benefitName
-                                                FROM(SELECT ID FROM card WHERE ID = 1) AS pCard
+                                                FROM(SELECT ID FROM card WHERE ID = ${card.cardID}) AS pCard
                                                 INNER JOIN card_benefit cLink ON pCard.ID = cLink.cardID
                                                 INNER JOIN benefit b ON cLink.benefitID=b.ID
                                                 `;
             let [benefits,]  = await connectDB.query(competitorCardBenefitsSQLobj);
+            console.log({...card, benefits: benefits});
             return {
                 ...card,
                 benefits: benefits
             };
-        });
+        }));
+        console.log(compCardsAndBenefits);
         return compCardsAndBenefits;
 
     } catch (error) {
